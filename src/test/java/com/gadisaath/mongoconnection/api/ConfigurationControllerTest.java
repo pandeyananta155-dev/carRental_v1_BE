@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/** Verifies HTTP responses from the configuration API with the database service mocked. */
 @WebMvcTest(ConfigurationController.class)
 class ConfigurationControllerTest {
     @Autowired
@@ -25,6 +26,7 @@ class ConfigurationControllerTest {
     @MockitoBean
     private MongoConfigurationService configurationService;
 
+        /** Confirms a successful MongoDB ping produces a healthy response. */
     @Test
     void healthReportsMongoConnectedAfterSuccessfulPing() throws Exception {
         mockMvc.perform(get("/api/health"))
@@ -33,6 +35,7 @@ class ConfigurationControllerTest {
                 .andExpect(jsonPath("$.mongodbStatus").value("CONNECTED"));
     }
 
+        /** Confirms a failed MongoDB ping is reported as service unavailable. */
     @Test
     void healthReturnsServiceUnavailableWhenMongoPingFails() throws Exception {
         doThrow(new MongoUnavailableException(new RuntimeException("offline")))
@@ -43,6 +46,7 @@ class ConfigurationControllerTest {
                 .andExpect(jsonPath("$.mongodbStatus").value("UNAVAILABLE"));
     }
 
+        /** Confirms the endpoint returns the document found by its exact type code. */
     @Test
     void returnsConfigurationByExactTypeCode() throws Exception {
         Document configuration = new Document("typeCode", "VEHICLE_SERVICE")
@@ -56,6 +60,7 @@ class ConfigurationControllerTest {
                 .andExpect(jsonPath("$.defaultServiceRadiusKm").value(15));
     }
 
+        /** Confirms an unknown type code produces HTTP 404. */
     @Test
     void returnsNotFoundWhenConfigurationDoesNotExist() throws Exception {
         given(configurationService.findByTypeCode("UNKNOWN"))
@@ -65,6 +70,7 @@ class ConfigurationControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+        /** Confirms a database query failure returns HTTP 503 with troubleshooting details. */
     @Test
     void returnsUsefulServiceUnavailableResponseWhenMongoQueryFails() throws Exception {
         given(configurationService.findByTypeCode("VEHICLE_SERVICE"))
