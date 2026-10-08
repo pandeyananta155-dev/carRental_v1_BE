@@ -1,1 +1,9 @@
 .env
+.env.*
+!.env.example
+
+# Local MongoDB data and logs
+/data/
+/mongodb/
+/mongodb-data/
+*.log
