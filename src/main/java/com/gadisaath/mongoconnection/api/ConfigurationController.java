@@ -13,15 +13,21 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 import java.util.Optional;
 
+/** Exposes health and stored-configuration endpoints under {@code /api}. */
 @RestController
 @RequestMapping("/api")
 public class ConfigurationController {
     private final MongoConfigurationService configurationService;
 
+    /** Creates the controller with its MongoDB-backed configuration service. */
     public ConfigurationController(MongoConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
 
+    /**
+     * Checks MongoDB with a real ping and reports database connectivity separately
+     * from API availability.
+     */
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
         try {
@@ -33,6 +39,12 @@ public class ConfigurationController {
         }
     }
 
+    /**
+     * Looks up a configuration document using an exact {@code typeCode} match.
+     *
+     * @param typeCode configuration identifier from the request path
+     * @return the document, or HTTP 404 when no matching document exists
+     */
     @GetMapping("/config/{typeCode}")
     public ResponseEntity<Document> getConfiguration(@PathVariable String typeCode) {
         Optional<Document> configuration = configurationService.findByTypeCode(typeCode);
