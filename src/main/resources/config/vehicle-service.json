@@ -1,0 +1,9 @@
+{
+  "typeCode": "VEHICLE_SERVICE",
+  "name": "Vehicle Service",
+  "enabled": true,
+  "currency": "NPR",
+  "defaultServiceRadiusKm": 15,
+  "supportedVehicleTypes": ["CAR", "MOTORCYCLE"],
+  "version": 1
+}

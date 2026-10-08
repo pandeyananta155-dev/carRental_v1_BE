@@ -2,6 +2,9 @@
 .env.*
 !.env.example
 
+# Maven build output
+/target/
+
 # Local MongoDB data and logs
 /data/
 /mongodb/
