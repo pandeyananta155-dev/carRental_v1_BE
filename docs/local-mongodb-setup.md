@@ -51,7 +51,7 @@ To intentionally delete all local MongoDB, MinIO, and Ollama data, run `docker c
 
 ## Native MongoDB (standalone alternative)
 
-The native instructions below start a standalone MongoDB server, not the default `rs0` replica set. For this alternative, use `mongodb://127.0.0.1:27017/gadisaath` without `?replicaSet=rs0`. This only replaces MongoDB; MinIO and Ollama still require Compose if needed.
+The native instructions below start a standalone MongoDB server, not the Compose `rs0` replica set. The backend's default local profile uses `mongodb://127.0.0.1:27017/gadisaath` for this standalone server, so no `MONGODB_URI` override is needed. This only replaces MongoDB; MinIO and Ollama still require Compose if needed.
 
 ### macOS
 
@@ -120,7 +120,7 @@ For the Compose replica set, use this URI in the local application and MongoDB C
 mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0
 ```
 
-For the native standalone alternative, omit `?replicaSet=rs0`. Set `MONGODB_URI` in the shell before running `mvn spring-boot:run`; `.env.example` is read by Compose only and is not automatically loaded by Maven or Spring Boot. The sample credentials in `.env.example` are for local development only; do not put real credentials or other secrets in that file.
+For the native standalone alternative, omit `?replicaSet=rs0`; this is the backend's default when `MONGODB_URI` is unset. For Compose, set `MONGODB_URI` in the shell to the replica-set URI before running `mvn spring-boot:run`. `.env.example` is read by Compose only and is not automatically loaded by Maven or Spring Boot. The sample credentials in `.env.example` are for local development only; do not put real credentials or other secrets in that file.
 
 In MongoDB Compass, paste the applicable URI into the connection field and select **Connect**. To verify the Compose replica set, run `docker compose ps` and confirm MongoDB is healthy and the initializer exited successfully; inspect `docker compose logs mongodb mongodb-rs-init` if startup fails. The database is created when the application first writes data.
 

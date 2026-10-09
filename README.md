@@ -20,26 +20,26 @@ Stop the services while preserving data with `docker compose down`. `docker comp
 
 ## Run the backend
 
-The API runs on the host and connects to the Compose MongoDB replica set. Set the URI in the shell that launches Maven:
+The API runs on the host. By default, the `local` profile connects to a native standalone MongoDB at `127.0.0.1:27017`, so with `mongod` running you can start the backend directly:
 
 ```sh
-export MONGODB_URI='mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0'
-```
-
-PowerShell:
-
-```powershell
-$env:MONGODB_URI = "mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0"
-```
-
-Build and run from the repository root:
-
-```sh
-mvn clean package
 mvn spring-boot:run
 ```
 
-`MONGODB_URI` defaults to `mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0` if not set. The application reads it through `spring.data.mongodb.uri`. Compose reads `.env` for service interpolation, but Maven and Spring Boot do not automatically load that file; export `MONGODB_URI` in the host shell as shown above.
+To use the Compose replica set instead, override the URI in the shell that launches Maven:
+
+```powershell
+$env:MONGODB_URI = "mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0"
+mvn spring-boot:run
+```
+
+On macOS or Linux, the equivalent is:
+
+```sh
+MONGODB_URI='mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0' mvn spring-boot:run
+```
+
+The default URI is configured in `src/main/resources/application-local.properties`; `MONGODB_URI` overrides it. Compose reads `.env` for service interpolation, but Maven and Spring Boot do not automatically load that file.
 
 ## Import the vehicle service configuration
 
