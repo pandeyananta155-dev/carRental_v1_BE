@@ -2,18 +2,34 @@
 
 This root Maven module is a minimal Spring Boot API demonstrating a live MongoDB health check and retrieval of manually managed configuration documents. It does not seed MongoDB on startup.
 
-## Run the backend
+## Start local services
 
-Prerequisites: Java 17, Maven, and a reachable MongoDB Community Server. Start your local server using the [Local MongoDB setup](docs/local-mongodb-setup.md) instructions. For the default local server, set:
+Prerequisites: Docker Engine/Desktop with the Compose plugin, Java 17, and Maven. From the directory containing `compose.yaml`, copy the sample environment file and start the services:
 
 ```sh
-export MONGODB_URI=mongodb://127.0.0.1:27017/gadisaath
+cp .env.example .env
+docker compose up -d
+docker compose ps --all
+```
+
+Wait for `mongodb` to become healthy and `mongodb-rs-init` to exit successfully before starting the backend. The local endpoints are MongoDB at `127.0.0.1:27017`, MinIO API at `127.0.0.1:9000`, MinIO console at <http://127.0.0.1:9001>, and Ollama API at `127.0.0.1:11434`. MinIO's sample console credentials are `minioadmin` / `minioadmin`; replace them in your untracked `.env` for local use beyond a throwaway machine.
+
+Create MinIO buckets through its console when needed. Ollama does not download models automatically; after installing the Ollama CLI, pull a model with `ollama pull <model>` (for example, `ollama pull llama3.2`). MinIO objects and Ollama models persist in named Docker volumes.
+
+Stop the services while preserving data with `docker compose down`. `docker compose down -v` permanently deletes the MongoDB, MinIO, and Ollama volumes.
+
+## Run the backend
+
+The API runs on the host and connects to the Compose MongoDB replica set. Set the URI in the shell that launches Maven:
+
+```sh
+export MONGODB_URI='mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0'
 ```
 
 PowerShell:
 
 ```powershell
-$env:MONGODB_URI = "mongodb://127.0.0.1:27017/gadisaath"
+$env:MONGODB_URI = "mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0"
 ```
 
 Build and run from the repository root:
@@ -23,15 +39,19 @@ mvn clean package
 mvn spring-boot:run
 ```
 
-`MONGODB_URI` defaults to `mongodb://127.0.0.1:27017/gadisaath` if not set. The application reads it through `spring.data.mongodb.uri`.
+`MONGODB_URI` defaults to `mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0` if not set. The application reads it through `spring.data.mongodb.uri`. Compose reads `.env` for service interpolation, but Maven and Spring Boot do not automatically load that file; export `MONGODB_URI` in the host shell as shown above.
 
 ## Import the vehicle service configuration
 
-In MongoDB Compass, connect to `mongodb://127.0.0.1:27017/gadisaath`, select database `gadisaath`, and open or create collection `app_config`. Choose **Add Data > Insert Document**, then paste the contents of [`src/main/resources/config/vehicle-service.json`](src/main/resources/config/vehicle-service.json) as one document. Insert it once manually; application startup does not import or overwrite it.
+In MongoDB Compass, connect to `mongodb://127.0.0.1:27017/gadisaath?replicaSet=rs0`, select database `gadisaath`, and open or create collection `app_config`. Choose **Add Data > Insert Document**, then paste the contents of [`src/main/resources/config/vehicle-service.json`](src/main/resources/config/vehicle-service.json) as one document. Insert it once manually; application startup does not import or overwrite it.
 
 For uniqueness in this POC, open the collection's **Indexes** tab and create an ascending index on `typeCode` with **Unique** enabled. Create the index after removing any duplicate `typeCode` values. This prevents duplicate configuration keys.
 
 ## API
+
+Interactive API documentation: <http://localhost:8080/swagger-ui>
+
+Actuator health check: <http://localhost:8080/actuator/health>. This reports overall application health, including the configured MongoDB health indicator. The existing API-specific check remains available at `/api/health` and returns its MongoDB connectivity response.
 
 Health check:
 
